@@ -1,12 +1,16 @@
 // handle direct motor command
+#include "FreeRTOS.h"
 #include "crtp_motor.h"
 #include "power_distribution.h"
 #include "stabilizer_types.h"
-#include "FreeRTOS.h"
 #include "static_mem.h"
+
+#include "task.h"
 
 static bool isInit = false;
 static uint32_t last_update_timestamp = 0;
+
+static void crtpMotorFailsafeTask(void* param);
 
 STATIC_MEM_TASK_ALLOC(crtpMotorFailsafeTask, CRTP_MOTOR_FAILSAFE_TASK_STACKSIZE);
 
@@ -18,7 +22,7 @@ void crtpMotorInit(void)
 
   crtpRegisterPortCB(CRTP_PORT_MOTOR,crtpMotorHandler);
 
-  STATIC_MEM_TASK_CREATE(crtpMotorFailsafeTask, crtpMotorFailsafeTask, CRTP_MOTOR_FAILSAFE_TASK_STACKSIZE, NULL, CRTP_MOTOR_FAILSAFE_TASK_PRI);
+  STATIC_MEM_TASK_CREATE(crtpMotorFailsafeTask, crtpMotorFailsafeTask, CRTP_MOTOR_FAILSAFE_TASK_NAME, NULL, CRTP_MOTOR_FAILSAFE_TASK_PRI);
 
   isInit = true;
 
@@ -29,7 +33,7 @@ void crtpMotorHandler(CRTPPacket *p)
   // channel 1 : command
   if (p->channel == 1){
     last_update_timestamp = T2M(xTaskGetTickCount());
-    const CrtpMotor* values = p->data;
+    const CrtpMotor* values = (CrtpMotor*)p->data;
     directMotor(values);
   }
 }
