@@ -208,6 +208,9 @@ PROJ_OBJ += multiranger.o
 PROJ_OBJ += lighthouse.o
 PROJ_OBJ += activeMarkerDeck.o
 
+# CRTP MOTOR
+PROJ_OBJ += crtp_motor.o
+
 # Uart2 Link for CRTP communication is not compatible with decks using uart2
 ifeq ($(UART2_LINK), 1)
 CFLAGS += -DUART2_LINK_COMM

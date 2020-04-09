@@ -37,7 +37,6 @@
 
 #include "pm.h"
 #include "crtp.h"
-#include "crtp_motor.h"
 
 static bool motorSetEnable = false;
 
@@ -77,6 +76,31 @@ void powerStop()
   motorsSetRatio(MOTOR_M2, 0);
   motorsSetRatio(MOTOR_M3, 0);
   motorsSetRatio(MOTOR_M4, 0);
+}
+
+// control motor thrust directly
+void directMotor(const CrtpMotor *control)
+{
+  motorPower.m1 = limitThrust(control->m1);
+  motorPower.m2 = limitThrust(control->m2);
+  motorPower.m3 = limitThrust(control->m3);
+  motorPower.m4 = limitThrust(control->m4);
+
+  if (motorSetEnable)
+  {
+    // user override motor power from cfclient
+    motorsSetRatio(MOTOR_M1, motorPowerSet.m1);
+    motorsSetRatio(MOTOR_M2, motorPowerSet.m2);
+    motorsSetRatio(MOTOR_M3, motorPowerSet.m3);
+    motorsSetRatio(MOTOR_M4, motorPowerSet.m4);
+  }
+  else
+  {
+    motorsSetRatio(MOTOR_M1, motorPower.m1);
+    motorsSetRatio(MOTOR_M2, motorPower.m2);
+    motorsSetRatio(MOTOR_M3, motorPower.m3);
+    motorsSetRatio(MOTOR_M4, motorPower.m4);
+  }
 }
 
 void powerDistribution(const control_t *control)

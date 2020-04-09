@@ -67,6 +67,8 @@
 
 
 // Task priorities. Higher number higher priority
+//
+#define CRTP_MOTOR_FAILSAFE_TASK_PRI 3
 #define STABILIZER_TASK_PRI     5
 #define SENSORS_TASK_PRI        4
 #define ADC_TASK_PRI            3
@@ -150,6 +152,7 @@
 #define UART2_TASK_NAME         "UART2"
 
 //Task stack sizes
+#define CRTP_MOTOR_FAILSAFE_TASK_STACKSIZE configMINIMAL_STACK_SIZE
 #define SYSTEM_TASK_STACKSIZE         (2* configMINIMAL_STACK_SIZE)
 #define ADC_TASK_STACKSIZE            configMINIMAL_STACK_SIZE
 #define PM_TASK_STACKSIZE             configMINIMAL_STACK_SIZE

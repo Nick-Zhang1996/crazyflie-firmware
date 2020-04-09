@@ -66,6 +66,7 @@
 #include "extrx.h"
 #include "app.h"
 #include "static_mem.h"
+#include "crtp_motor.h"
 
 /* Private variable */
 static bool selftestPassed;
@@ -167,11 +168,12 @@ void systemTask(void *arg)
   commInit();
   commanderInit();
 
-  StateEstimatorType estimator = anyEstimator;
-  estimatorKalmanTaskInit();
+  //StateEstimatorType estimator = anyEstimator;
+  //estimatorKalmanTaskInit();
   deckInit();
-  estimator = deckGetRequiredEstimator();
-  stabilizerInit(estimator);
+  crtpMotorInit();
+  //estimator = deckGetRequiredEstimator();
+  //stabilizerInit(estimator);
   if (deckGetRequiredLowInterferenceRadioMode() && platformConfigPhysicalLayoutAntennasAreClose())
   {
     platformSetLowInterferenceRadioMode();
