@@ -102,6 +102,7 @@ void powerDistribution(const control_t *control)
   static int counter = 0;
   static bool update = false;
   static CRTPPacket pkt;
+  pkt.size = sizeof(CrtpMotor);
   CrtpMotor *cm = (CrtpMotor *)pkt.data;
   // stabilizer runs at 1kHz by default, which may be too fast for radio to keep up
   // reduce frequency to 100Hz
