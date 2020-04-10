@@ -149,6 +149,7 @@ void powerDistribution(const control_t *control)
   if (update)
   {
     crtpSendPacket(&pkt);
+    
   }
 
 }
