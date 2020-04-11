@@ -104,15 +104,17 @@ void powerDistribution(const control_t *control)
   static CRTPPacket pkt;
   pkt.size = sizeof(CrtpMotor);
   CrtpMotor *cm = (CrtpMotor *)pkt.data;
-  // stabilizer runs at 1kHz by default, which may be too fast for radio to keep up
-  // reduce frequency to 100Hz
-  if (++counter%10 == 0)
+  // stabilizer runs at 1kHz by default, which is too fast for radio to keep up
+  // reduce frequency to 33Hz
+  if (++counter%30 == 0)
   { 
     update = true;
     // report motor thrust and voltage
     pkt.port = CRTP_PORT_MOTOR;
     pkt.channel = 2;
     cm->voltage = pmGetBatteryVoltage();
+    // FIXME , DEBUG only, for seeing whether Tx can keep up
+    //cm->voltage = (float)crtpGetFreeTxQueuePackets();
   }
   else
   {
