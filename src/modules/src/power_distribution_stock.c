@@ -105,14 +105,15 @@ void powerDistribution(const control_t *control)
   pkt.size = sizeof(CrtpMotor);
   CrtpMotor *cm = (CrtpMotor *)pkt.data;
   // stabilizer runs at 1kHz by default, which is too fast for radio to keep up
-  // reduce frequency to 33Hz
-  if (++counter%30 == 0)
+
+  // update thrust, reduce frequency to 30Hz
+  if (++counter%33 == 0)
   { 
     update = true;
     // report motor thrust and voltage
     pkt.port = CRTP_PORT_MOTOR;
     pkt.channel = 2;
-    cm->voltage = pmGetBatteryVoltage();
+    //cm->voltage = pmGetBatteryVoltage();
     // FIXME , DEBUG only, for seeing whether Tx can keep up
     //cm->voltage = (float)crtpGetFreeTxQueuePackets();
   }
@@ -130,10 +131,11 @@ void powerDistribution(const control_t *control)
     motorsSetRatio(MOTOR_M2, motorPowerSet.m2);
     motorsSetRatio(MOTOR_M3, motorPowerSet.m3);
     motorsSetRatio(MOTOR_M4, motorPowerSet.m4);
-    cm->m1 = motorPowerSet.m1;
-    cm->m2 = motorPowerSet.m2;
-    cm->m3 = motorPowerSet.m3;
-    cm->m4 = motorPowerSet.m4;
+    // reduce to 16 bit
+    cm->m1 = motorPowerSet.m1 >> 12;
+    cm->m2 = motorPowerSet.m2 >> 12;
+    cm->m3 = motorPowerSet.m3 >> 12;
+    cm->m4 = motorPowerSet.m4 >> 12;
   }
   else
   {
@@ -141,10 +143,10 @@ void powerDistribution(const control_t *control)
     motorsSetRatio(MOTOR_M2, motorPower.m2);
     motorsSetRatio(MOTOR_M3, motorPower.m3);
     motorsSetRatio(MOTOR_M4, motorPower.m4);
-    cm->m1 = motorPower.m1;
-    cm->m2 = motorPower.m2;
-    cm->m3 = motorPower.m3;
-    cm->m4 = motorPower.m4;
+    cm->m1 = motorPower.m1 >> 12;
+    cm->m2 = motorPower.m2 >> 12;
+    cm->m3 = motorPower.m3 >> 12;
+    cm->m4 = motorPower.m4 >> 12;
   }
 
   //send packet
@@ -153,6 +155,18 @@ void powerDistribution(const control_t *control)
     crtpSendPacket(&pkt);
     
   }
+
+  // update voltage at a lower freq, 10Hz
+  // NOTE should be ok to recycle pkt
+  if (counter%100 == 0){
+    pkt.port = CRTP_PORT_MOTOR;
+    pkt.channel = 3;
+    cm->voltage = (uint16_t)(1000*pmGetBatteryVoltage());
+    // FIXME , DEBUG only, for seeing whether Tx can keep up
+    //cm->voltage = (uint16_t)crtpGetFreeTxQueuePackets();
+    crtpSendPacket(&pkt);
+  }
+
 
 }
 
