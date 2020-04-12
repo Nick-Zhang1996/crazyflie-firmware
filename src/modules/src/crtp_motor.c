@@ -6,6 +6,7 @@
 #include "static_mem.h"
 
 #include "task.h"
+#include "console.h"
 
 static bool isInit = false;
 static uint32_t last_update_timestamp = 0;
@@ -19,21 +20,26 @@ void crtpMotorInit(void)
   if (isInit){
     return;
   }
+  //consolePuts("crtpMotorInit... \n");
+  powerDistributionInit();
 
   crtpRegisterPortCB(CRTP_PORT_MOTOR,crtpMotorHandler);
 
   STATIC_MEM_TASK_CREATE(crtpMotorFailsafeTask, crtpMotorFailsafeTask, CRTP_MOTOR_FAILSAFE_TASK_NAME, NULL, CRTP_MOTOR_FAILSAFE_TASK_PRI);
 
   isInit = true;
+  //consolePuts("crtpMotorInit...success \n");
 
 }
 
 void crtpMotorHandler(CRTPPacket *p)
 {
+  //consolePuts("crtpMotorHandler called\n");
   // channel 1 : command
   if (p->channel == 1){
     last_update_timestamp = T2M(xTaskGetTickCount());
     const CrtpMotor* values = (CrtpMotor*)p->data;
+    //consolePrintf("motor 1 = %u\n",values->m1);
     directMotor(values);
   }
 }
