@@ -168,12 +168,12 @@ void systemTask(void *arg)
   commInit();
   commanderInit();
 
-  //StateEstimatorType estimator = anyEstimator;
-  //estimatorKalmanTaskInit();
+  StateEstimatorType estimator = anyEstimator;
+  estimatorKalmanTaskInit();
   deckInit();
-  crtpMotorInit();
-  //estimator = deckGetRequiredEstimator();
+  estimator = deckGetRequiredEstimator();
   //stabilizerInit(estimator);
+  crtpMotorInit(estimator);
   if (deckGetRequiredLowInterferenceRadioMode() && platformConfigPhysicalLayoutAntennasAreClose())
   {
     platformSetLowInterferenceRadioMode();
@@ -190,7 +190,7 @@ void systemTask(void *arg)
   pass &= configblockTest();
   pass &= commTest();
   pass &= commanderTest();
-  pass &= stabilizerTest();
+  //pass &= stabilizerTest();
   pass &= estimatorKalmanTaskTest();
   pass &= deckTest();
   pass &= soundTest();

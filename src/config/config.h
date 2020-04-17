@@ -68,7 +68,7 @@
 
 // Task priorities. Higher number higher priority
 //
-#define CRTP_MOTOR_FAILSAFE_TASK_PRI 3
+#define CRTP_MOTOR_TASK_PRI     5
 #define STABILIZER_TASK_PRI     5
 #define SENSORS_TASK_PRI        4
 #define ADC_TASK_PRI            3
@@ -150,7 +150,7 @@
 #define AI_DECK_GAP_TASK_NAME   "AI-DECK-GAP"
 #define AI_DECK_NINA_TASK_NAME  "AI-DECK-NINA"
 #define UART2_TASK_NAME         "UART2"
-#define CRTP_MOTOR_FAILSAFE_TASK_NAME "MOTOR-FAILSAFE"
+#define CRTP_MOTOR_TASK_NAME "CRTP-MOTOR"
 
 //Task stack sizes
 #define CRTP_MOTOR_FAILSAFE_TASK_STACKSIZE configMINIMAL_STACK_SIZE

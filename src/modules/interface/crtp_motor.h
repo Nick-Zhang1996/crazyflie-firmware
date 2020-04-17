@@ -4,9 +4,9 @@
 #define CRTP_MOTOR_H
 
 #include "crtp.h"
+#include "estimator.h"
 
 #define CRTP_MOTOR_FAILSAFE_TIMEOUT_MS 100
-#define CRTP_MOTOR_FAILSAFE_RATE 50
 
 typedef struct _CrtpMotor
 {
@@ -18,7 +18,7 @@ typedef struct _CrtpMotor
 } __attribute__((packed)) CrtpMotor;
 
 void crtpMotorHandler(CRTPPacket *p);
-void crtpMotorInit(void);
+void crtpMotorInit(StateEstimatorType estimator);
 
 
 #endif /*CRTP_MOTOR_H*/
