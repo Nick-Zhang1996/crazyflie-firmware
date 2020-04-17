@@ -4,8 +4,14 @@
 #include "power_distribution.h"
 #include "stabilizer_types.h"
 #include "static_mem.h"
+#include "sensors.h"
 #include "estimator.h"
 #include "controller.h"
+#include "system.h"
+#include "debug.h"
+#include "motors.h"
+#include "pm.h"
+#include "log.h"
 
 #include "task.h"
 #include "console.h"
@@ -14,22 +20,21 @@ static bool isInit = false;
 // TODO use emergencyTimeStopTimeout for failsafe
 static uint32_t last_update_timestamp = 0;
 
-static bool emergencyStop = false;
-static int emergencyStopTimeout = EMERGENCY_STOP_TIMEOUT_DISABLED;
-
 #define PROPTEST_NBR_OF_VARIANCE_VALUES   100
 static bool startPropTest = false;
 
 uint32_t inToOutLatency;
 
 // State variables for the stabilizer
-static setpoint_t setpoint;
+//static setpoint_t setpoint;
 static sensorData_t sensorData;
 static state_t state;
 static control_t control;
 
 static StateEstimatorType estimatorType;
 static ControllerType controllerType;
+
+static bool systemReady = false;
 
 
 // angular velocity - milliradians / sec
@@ -50,12 +55,65 @@ typedef enum { configureAcc, measureNoiseFloor, measureProp, testBattery, restar
 #else
   static TestState testState = testDone;
 #endif
+static float accVarX[NBR_OF_MOTORS];
+static float accVarY[NBR_OF_MOTORS];
+static float accVarZ[NBR_OF_MOTORS];
 
+// Bit field indicating if the motors passed the motor test.
+// Bit 0 - 1 = M1 passed
+// Bit 1 - 1 = M2 passed
+// Bit 2 - 1 = M3 passed
+// Bit 3 - 1 = M4 passed
+static uint8_t motorPass = 0;
+static uint16_t motorTestCount = 0;
 
 static void crtpMotorTask(void* param);
 static void testProps(sensorData_t *sensors);
 
 STATIC_MEM_TASK_ALLOC(crtpMotorTask, CRTP_MOTOR_TASK_STACKSIZE);
+
+static void calcSensorToOutputLatency(const sensorData_t *sensorData)
+{
+  uint64_t outTimestamp = usecTimestamp();
+  inToOutLatency = outTimestamp - sensorData->interruptTimestamp;
+}
+
+static float variance(float *buffer, uint32_t length)
+{
+  uint32_t i;
+  float sum = 0;
+  float sumSq = 0;
+
+  for (i = 0; i < length; i++)
+  {
+    sum += buffer[i];
+    sumSq += buffer[i] * buffer[i];
+  }
+
+  return sumSq - (sum * sum) / length;
+}
+
+/** Evaluate the values from the propeller test
+ * @param low The low limit of the self test
+ * @param high The high limit of the self test
+ * @param value The value to compare with.
+ * @param string A pointer to a string describing the value.
+ * @return True if self test within low - high limit, false otherwise
+ */
+static bool evaluateTest(float low, float high, float value, uint8_t motor)
+{
+  if (value < low || value > high)
+  {
+    DEBUG_PRINT("Propeller test on M%d [FAIL]. low: %0.2f, high: %0.2f, measured: %0.2f\n",
+                motor + 1, (double)low, (double)high, (double)value);
+    return false;
+  }
+
+  motorPass |= (1 << motor);
+
+  return true;
+}
+
 
 void crtpMotorInit(StateEstimatorType estimator)
 {
@@ -82,6 +140,9 @@ void crtpMotorInit(StateEstimatorType estimator)
 
 void crtpMotorHandler(CRTPPacket *p)
 {
+  if (!systemReady){
+    return;
+  }
   //consolePuts("crtpMotorHandler called\n");
   // channel 1 : command
   if (p->channel == 1){
@@ -95,10 +156,10 @@ void crtpMotorHandler(CRTPPacket *p)
     directMotor(values);
 
     // reverse calculate control for use with state estimator
-    control.thrust = m1/4 + m2/4 + m3/4 + m4/4;
-    control.roll = m3/2 + m4/2 - m1/2 - m2/2;
-    control.pitch = m1/2 + m4/2 - m2/2 - m3/2;
-    control.yaw = m1/4 + m3/4 - m2/4 - m4/4;
+    control.thrust = motorThrust.m1/4 + motorThrust.m2/4 + motorThrust.m3/4 + motorThrust.m4/4;
+    control.roll = motorThrust.m3/2 + motorThrust.m4/2 - motorThrust.m1/2 - motorThrust.m2/2;
+    control.pitch = motorThrust.m1/2 + motorThrust.m4/2 - motorThrust.m2/2 - motorThrust.m3/2;
+    control.yaw = motorThrust.m1/4 + motorThrust.m3/4 - motorThrust.m2/4 - motorThrust.m4/4;
   }
 }
 
@@ -111,6 +172,7 @@ static void crtpMotorTask(void* param)
 
   //Wait for the system to be fully started
   systemWaitStart();
+  systemReady = true;
 
   DEBUG_PRINT("Wait for sensor calibration...\n");
 
@@ -135,7 +197,7 @@ static void crtpMotorTask(void* param)
 
     if (testState != testDone) {
       sensorsAcquire(&sensorData, tick);
-      //testProps(&sensorData);
+      testProps(&sensorData);
     } else {
       // allow to update estimator dynamically
       if (getStateEstimator() != estimatorType) {
@@ -162,6 +224,8 @@ static void crtpMotorTask(void* param)
         powerStop();
       }
     }
+    calcSensorToOutputLatency(&sensorData);
+    tick++;
 
   }
 }
@@ -346,10 +410,10 @@ LOG_ADD(LOG_INT16, rateRoll, &rateRoll)
 LOG_ADD(LOG_INT16, ratePitch, &ratePitch)
 LOG_ADD(LOG_INT16, rateYaw, &rateYaw)
 
-LOG_ADD(LOG_UIN16,m1, &motorThrust.m1)
-LOG_ADD(LOG_UIN16,m2, &motorThrust.m2)
-LOG_ADD(LOG_UIN16,m3, &motorThrust.m3)
-LOG_ADD(LOG_UIN16,m4, &motorThrust.m4)
+LOG_ADD(LOG_UINT16,m1, &motorThrust.m1)
+LOG_ADD(LOG_UINT16,m2, &motorThrust.m2)
+LOG_ADD(LOG_UINT16,m3, &motorThrust.m3)
+LOG_ADD(LOG_UINT16,m4, &motorThrust.m4)
 
 LOG_GROUP_STOP(custom)
 
