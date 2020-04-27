@@ -33,3 +33,6 @@ This also rules out the influence of output limits, lpf, etc, although I believe
 
 ### Exp 08
 I reproduced Exp 05 and observed the old behavior: high frequency osciliation but still managed to stablize itself along the string. So Exp 05 is indeed reproduceable.
+
+### Exp 09
+Commented out suspected useless code snippets in Exp 08. Turns out they are indeed useless. The behavior is almost identical to Exp 08 (and 05).
