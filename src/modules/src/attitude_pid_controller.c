@@ -124,7 +124,7 @@ void attitudeControllerDebugPID(
   // PD controller
   // verify gain 
   // unit: deg, deg/s
-  pitchOutput = saturateSignedInt16(1500 * (eulerPitchDesired - eulerPitchActual) - 500 * pitchRateActual);
+  pitchOutput = saturateSignedInt16(1500 * (eulerPitchDesired - eulerPitchActual) - 350 * pitchRateActual);
   yawOutput = 0;
 }
 

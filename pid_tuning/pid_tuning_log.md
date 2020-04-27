@@ -47,8 +47,16 @@ this is with P 1500 and D 250, all embedded in the DebugPID() function
 
 Since there were still oscillation, lets try increasing D and see if that goes away. We will first do this qualitatively, then with a fixed throttle, record oscillation amplitude to quantify improvement
 
-## Exp 11
+### Exp 11
 try with P 1500, D 500
 My subjective view: oscillation amplitude were smaller at given thrust, but at higher frequency. There were a lot of sideway oscillation, i.e., translational movement
 
+### Exp 12
+Let's try with P 1500, D350, and observe how the cf deals with a step input
+Result: Quite responsive
 
+Mathmatically speaking, how different is PD from PP?  -> transfer function 
+
+### Exp 13
+Recreate P-P controller
+with rate P = 250, attitude P = 6, vehilcle shows similar behavior to PD controller in exp 12, oscillates at lower thrust, but at 50% thrust oscillation is very small. However, sometimes is oscillates sideway quite aggressively, as in 12 
