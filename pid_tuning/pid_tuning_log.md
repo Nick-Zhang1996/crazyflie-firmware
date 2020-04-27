@@ -64,4 +64,4 @@ with rate P = 250, attitude P = 6, vehilcle shows similar behavior to PD control
 I suspect that this oscillation may be due to the string. Next I'll try implement the PD controller to roll and pitch, and leave in default yaw controller. See how the vehicle behave without constrain.  
 
 ### Exp 14
-try exp2
+try exp2, no oscillation, so it has nothing to do with strings...
