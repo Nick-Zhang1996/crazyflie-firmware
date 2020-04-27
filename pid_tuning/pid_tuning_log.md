@@ -79,4 +79,9 @@ used Tao's PD controller as in 9 and 10, but added a damper with default LPF on 
 
 result: no more oscillation
 
+Next, let's try this PD + rate D configuration on pitch and roll, and see if it can be flied by a human
 
+(ignore below for now)
+Next, let's try lower the control frequency, from 1000Hz to 100
+
+Don't forget to change sampling frquency in sensor related code
