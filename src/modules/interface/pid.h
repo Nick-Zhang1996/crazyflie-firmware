@@ -35,7 +35,7 @@
 #define PID_ROLL_RATE_KD  0.0
 #define PID_ROLL_RATE_INTEGRATION_LIMIT    33.3
 
-#define PID_PITCH_RATE_KP  0.0
+#define PID_PITCH_RATE_KP  250.0
 #define PID_PITCH_RATE_KI  0.0
 #define PID_PITCH_RATE_KD  0.0
 #define PID_PITCH_RATE_INTEGRATION_LIMIT   33.3
@@ -52,9 +52,9 @@
 
 // 250 * (6 * (target_pitch - pitch) - pitch_rate)
 // 1500 * (target_pitch - pitch) - 250 * pitch_rate.
-#define PID_PITCH_KP  1500.0
+#define PID_PITCH_KP  6.0
 #define PID_PITCH_KI  0.0
-#define PID_PITCH_KD  250.0
+#define PID_PITCH_KD  0.0
 #define PID_PITCH_INTEGRATION_LIMIT   20.0
 
 #define PID_YAW_KP  0.0

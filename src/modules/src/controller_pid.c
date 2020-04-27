@@ -87,7 +87,6 @@ void controllerPid(control_t *control, setpoint_t *setpoint,
       attitudeDesired.pitch = setpoint->attitude.pitch;
     }
 
-    /*
     attitudeControllerCorrectAttitudePID(state->attitude.roll, state->attitude.pitch, state->attitude.yaw,
                                 attitudeDesired.roll, attitudeDesired.pitch, attitudeDesired.yaw,
                                 &rateDesired.roll, &rateDesired.pitch, &rateDesired.yaw);
@@ -107,10 +106,6 @@ void controllerPid(control_t *control, setpoint_t *setpoint,
     // TODO: Investigate possibility to subtract gyro drift.
     attitudeControllerCorrectRatePID(sensors->gyro.x, -sensors->gyro.y, sensors->gyro.z,
                              rateDesired.roll, rateDesired.pitch, rateDesired.yaw);
-    */
-    attitudeControllerDebugPID(state->attitude.roll, state->attitude.pitch, state->attitude.yaw,
-                                attitudeDesired.roll, attitudeDesired.pitch, attitudeDesired.yaw,
-                                sensors->gyro.x, -sensors->gyro.y, sensors->gyro.z);
 
     attitudeControllerGetActuatorOutput(&control->roll,
                                         &control->pitch,

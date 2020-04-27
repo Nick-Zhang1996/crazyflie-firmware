@@ -30,3 +30,6 @@ pitchOutput = saturateSignedInt16(1500 * (eulerPitchDesired - eulerRollActual) -
 yawOutput = 0;
 ```
 This also rules out the influence of output limits, lpf, etc, although I believe they are not active in the codebase. Behavor: it was going up and down at modest frequency (maybe 2 Hz) but it controled its attitude fairly well. I didn't observe the high frequency oscillation in Exp 05. I guess I should diff Exp 07 and 05 to understand where this difference comes from.
+
+### Exp 08
+I reproduced Exp 05 and observed the old behavior: high frequency osciliation but still managed to stablize itself along the string. So Exp 05 is indeed reproduceable.
