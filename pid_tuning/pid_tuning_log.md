@@ -43,3 +43,12 @@ Goal today is to have a single onboard PID controller for pitch attitude control
 ### Exp 10
 Start from exp09 code, fix the typo about roll angle (as shown earlier in this log)
 result: stable oscillation, magnitude decreases as thrust goes up, from 10deg - 5deg
+this is with P 1500 and D 250, all embedded in the DebugPID() function
+
+Since there were still oscillation, lets try increasing D and see if that goes away. We will first do this qualitatively, then with a fixed throttle, record oscillation amplitude to quantify improvement
+
+## Exp 11
+try with P 1500, D 500
+My subjective view: oscillation amplitude were smaller at given thrust, but at higher frequency. There were a lot of sideway oscillation, i.e., translational movement
+
+
