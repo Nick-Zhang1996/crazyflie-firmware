@@ -112,13 +112,19 @@ void attitudeControllerCorrectRatePID(
   yawOutput = saturateSignedInt16(pidUpdate(&pidYawRate, yawRateActual, true));
 }
 
+// added by Tao for making a single PID controller for attitude control
 void attitudeControllerDebugPID(
        float eulerRollActual, float eulerPitchActual, float eulerYawActual,
        float eulerRollDesired, float eulerPitchDesired, float eulerYawDesired,
        float rollRateActual, float pitchRateActual, float yawRateActual)
 {
   rollOutput = 0;
-  pitchOutput = saturateSignedInt16(1500 * (eulerPitchDesired - eulerRollActual) - 250 * pitchRateActual);
+  // should we apply D term to d_error/dt instead of d_x/dt ?
+  // I guess d_reference would be zero most of the time
+  // PD controller
+  // verify gain 
+  // unit: deg, deg/s
+  pitchOutput = saturateSignedInt16(1500 * (eulerPitchDesired - eulerPitchActual) - 250 * pitchRateActual);
   yawOutput = 0;
 }
 

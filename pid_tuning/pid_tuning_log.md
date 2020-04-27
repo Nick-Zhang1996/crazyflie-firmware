@@ -36,3 +36,10 @@ I reproduced Exp 05 and observed the old behavior: high frequency osciliation bu
 
 ### Exp 09
 Commented out suspected useless code snippets in Exp 08. Turns out they are indeed useless. The behavior is almost identical to Exp 08 (and 05).
+
+### April 27
+Goal today is to have a single onboard PID controller for pitch attitude control. ( no separated rate and attitude controller)
+
+### Exp 10
+Start from exp09 code, fix the typo about roll angle (as shown earlier in this log)
+result: stable oscillation, magnitude decreases as thrust goes up, from 10deg - 5deg
