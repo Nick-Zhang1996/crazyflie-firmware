@@ -56,6 +56,8 @@ PidObject pidRoll;
 PidObject pidPitch;
 PidObject pidYaw;
 
+PidObject pidPitchRateD;
+
 static int16_t rollOutput;
 static int16_t pitchOutput;
 static int16_t yawOutput;
@@ -89,6 +91,13 @@ void attitudeControllerInit(const float updateDt)
   pidSetIntegralLimit(&pidRoll,  PID_ROLL_INTEGRATION_LIMIT);
   pidSetIntegralLimit(&pidPitch, PID_PITCH_INTEGRATION_LIMIT);
   pidSetIntegralLimit(&pidYaw,   PID_YAW_INTEGRATION_LIMIT);
+
+  // Added by Nick
+  pidInit(&pidPitchRateD, 0, 0, 0, PID_PITCH_RATE_KD,
+      updateDt, ATTITUDE_RATE, ATTITUDE_RATE_LPF_CUTOFF_FREQ, ATTITUDE_RATE_LPF_ENABLE);
+
+  // Not that it will be used...
+  pidSetIntegralLimit(&pidPitchRateD, PID_PITCH_RATE_INTEGRATION_LIMIT);
 
   isInit = true;
 }
@@ -125,6 +134,8 @@ void attitudeControllerDebugPID(
   // verify gain 
   // unit: deg, deg/s
   pitchOutput = saturateSignedInt16(1500 * (eulerPitchDesired - eulerPitchActual) - 250 * pitchRateActual);
+  pidSetDesired(&pidPitchRateD, 0);
+  pitchOutput += saturateSignedInt16(pidUpdate(&pidPitchRateD, pitchRateActual, true));
   yawOutput = 0;
 }
 

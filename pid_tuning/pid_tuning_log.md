@@ -65,3 +65,18 @@ I suspect that this oscillation may be due to the string. Next I'll try implemen
 
 ### Exp 14
 try exp2, no oscillation, so it has nothing to do with strings...
+
+### Exp 15
+default P-P controller oscillates quite a bit
+default PD-P controller effectively damps this oscillation
+
+OK, so maybe we need a damper on rate. A damper on rate essentially acts against external disturbences, who manifest as undesired angular acceleration.
+
+Let's cheat a bit by adding a damper on rate, if I recall correctly there's a LPF in there. 
+
+### Exp 16
+used Tao's PD controller as in 9 and 10, but added a damper with default LPF on pitch rate
+
+result: no more oscillation
+
+
