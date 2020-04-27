@@ -58,5 +58,10 @@ Result: Quite responsive
 Mathmatically speaking, how different is PD from PP?  -> transfer function 
 
 ### Exp 13
-Recreate P-P controller
+Recreate P-P controller in 5
 with rate P = 250, attitude P = 6, vehilcle shows similar behavior to PD controller in exp 12, oscillates at lower thrust, but at 50% thrust oscillation is very small. However, sometimes is oscillates sideway quite aggressively, as in 12 
+
+I suspect that this oscillation may be due to the string. Next I'll try implement the PD controller to roll and pitch, and leave in default yaw controller. See how the vehicle behave without constrain.  
+
+### Exp 14
+try exp2
