@@ -35,6 +35,14 @@ void attitudeControllerInit(const float updateDt);
 bool attitudeControllerTest(void);
 
 /**
+ * Added by Tao for debugging purposes. 
+ */
+void attitudeControllerDebugPID(
+       float eulerRollActual, float eulerPitchActual, float eulerYawActual,
+       float eulerRollDesired, float eulerPitchDesired, float eulerYawDesired,
+       float rollRateActual, float pitchRateActual, float yawRateActual);
+
+/**
  * Make the controller run an update of the attitude PID. The output is
  * the desired rate which should be fed into a rate controller. The
  * attitude controller can be run in a slower update rate then the rate

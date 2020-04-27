@@ -117,6 +117,16 @@ void attitudeControllerCorrectRatePID(
   */
 }
 
+void attitudeControllerDebugPID(
+       float eulerRollActual, float eulerPitchActual, float eulerYawActual,
+       float eulerRollDesired, float eulerPitchDesired, float eulerYawDesired,
+       float rollRateActual, float pitchRateActual, float yawRateActual)
+{
+  rollOutput = 0;
+  pitchOutput = saturateSignedInt16(1500 * (eulerPitchDesired - eulerRollActual) - 250 * pitchRateActual);
+  yawOutput = 0;
+}
+
 void attitudeControllerCorrectAttitudePID(
        float eulerRollActual, float eulerPitchActual, float eulerYawActual,
        float eulerRollDesired, float eulerPitchDesired, float eulerYawDesired,
