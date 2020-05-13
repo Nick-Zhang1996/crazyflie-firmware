@@ -400,7 +400,7 @@ static void testProps(sensorData_t *sensors)
   }
 }
 LOG_GROUP_START(custom)
-// in rad
+// in deg
 LOG_ADD(LOG_FLOAT, roll, &state.attitude.roll)
 LOG_ADD(LOG_FLOAT, pitch, &state.attitude.pitch)
 LOG_ADD(LOG_FLOAT, yaw, &state.attitude.yaw)
