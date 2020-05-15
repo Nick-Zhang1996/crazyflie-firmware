@@ -46,6 +46,13 @@ static struct {
   uint32_t m2;
   uint32_t m3;
   uint32_t m4;
+} actualMotorPower;
+
+static struct {
+  uint32_t m1;
+  uint32_t m2;
+  uint32_t m3;
+  uint32_t m4;
 } motorPower;
 
 static struct {
@@ -131,10 +138,16 @@ void powerDistribution(const control_t *control)
     motorsSetRatio(MOTOR_M2, motorPowerSet.m2);
     motorsSetRatio(MOTOR_M3, motorPowerSet.m3);
     motorsSetRatio(MOTOR_M4, motorPowerSet.m4);
+
     cm->m1 = motorPowerSet.m1;
     cm->m2 = motorPowerSet.m2;
     cm->m3 = motorPowerSet.m3;
     cm->m4 = motorPowerSet.m4;
+
+    actualMotorPower.m1 = motorPowerSet.m1;
+    actualMotorPower.m2 = motorPowerSet.m2;
+    actualMotorPower.m3 = motorPowerSet.m3;
+    actualMotorPower.m4 = motorPowerSet.m4;
   }
   else
   {
@@ -142,10 +155,16 @@ void powerDistribution(const control_t *control)
     motorsSetRatio(MOTOR_M2, motorPower.m2);
     motorsSetRatio(MOTOR_M3, motorPower.m3);
     motorsSetRatio(MOTOR_M4, motorPower.m4);
+
     cm->m1 = motorPower.m1;
     cm->m2 = motorPower.m2;
     cm->m3 = motorPower.m3;
     cm->m4 = motorPower.m4;
+
+    actualMotorPower.m1 = motorPower.m1;
+    actualMotorPower.m2 = motorPower.m2;
+    actualMotorPower.m3 = motorPower.m3;
+    actualMotorPower.m4 = motorPower.m4;
   }
 
   //send packet
@@ -171,3 +190,10 @@ LOG_ADD(LOG_UINT32, m2, &motorPower.m2)
 LOG_ADD(LOG_UINT32, m3, &motorPower.m3)
 LOG_ADD(LOG_UINT32, m4, &motorPower.m4)
 LOG_GROUP_STOP(motor)
+
+LOG_GROUP_START(custom)
+LOG_ADD(LOG_UINT32, m1, &actualMotorPower.m1)
+LOG_ADD(LOG_UINT32, m2, &actualMotorPower.m2)
+LOG_ADD(LOG_UINT32, m3, &actualMotorPower.m3)
+LOG_ADD(LOG_UINT32, m4, &actualMotorPower.m4)
+LOG_GROUP_STOP(custom)
