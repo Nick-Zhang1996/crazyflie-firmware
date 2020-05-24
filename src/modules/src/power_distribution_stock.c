@@ -79,6 +79,9 @@ void powerStop()
 // control motor thrust directly
 void directMotor(const CrtpMotor *control)
 {
+  if (!checkOverrideStatus()){
+    return;
+  }
   motorPower.m1 = limitThrust(control->m1);
   motorPower.m2 = limitThrust(control->m2);
   motorPower.m3 = limitThrust(control->m3);

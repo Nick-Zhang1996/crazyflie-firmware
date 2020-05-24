@@ -52,6 +52,7 @@
 #include "statsCnt.h"
 #include "static_mem.h"
 #include "crtp_motor.h"
+#include "console.h"
 
 static bool isInit;
 static bool emergencyStop = false;
@@ -231,11 +232,14 @@ void crtpMotorHandler(CRTPPacket *p)
     motorThrust.m4 = values->m4;
     directMotor(values);
 
-  } else if (p->channel == 4){
+  } else if (p->channel == 3){
     // set override status
     const CrtpMotor* values = (CrtpMotor*)p->data;
     overrideMotors = values->overrideMotors;
+    //consolePrintf("Override %s \n",overrideMotors? "True":"False");
   }
+  //consolePrintf("channel %d: \n",p->channel);
+  //consolePrintf("data :%X, %X \n",p->data[0],p->data[1]);
 }
 
 // modify control to suit actual used value
