@@ -34,7 +34,9 @@
 #include "platform.h"
 #include "motors.h"
 #include "debug.h"
-#include "stabilizer.h"
+
+#include "pm.h"
+#include "crtp.h"
 
 static bool motorSetEnable = false;
 
@@ -103,14 +105,6 @@ void directMotor(const CrtpMotor *control)
 
 void powerDistribution(const control_t *control)
 {
-    if (checkOverrideStatus()){
-      if (checkOverrideTimeout()){
-        powerStop();
-      } else {
-        return;
-      }
-    }
-
   #ifdef QUAD_FORMATION_X
     int16_t r = control->roll / 2.0f;
     int16_t p = control->pitch / 2.0f;
@@ -129,12 +123,38 @@ void powerDistribution(const control_t *control)
                                control->yaw);
   #endif
 
+  static int counter = 0;
+  static bool update = false;
+  static CRTPPacket pkt;
+  CrtpMotor *cm = (CrtpMotor *)pkt.data;
+  // stabilizer runs at 1kHz by default, which may be too fast for radio to keep up
+  // reduce frequency to 100Hz
+  if (++counter%10 == 0)
+  { 
+    update = true;
+    // report motor thrust and voltage
+    pkt.port = CRTP_PORT_MOTOR;
+    pkt.channel = 2;
+    cm->voltage = pmGetBatteryVoltage();
+  }
+  else
+  {
+    update = false;
+  }
+
+
+
   if (motorSetEnable)
   {
+    // user override motor power from cfclient
     motorsSetRatio(MOTOR_M1, motorPowerSet.m1);
     motorsSetRatio(MOTOR_M2, motorPowerSet.m2);
     motorsSetRatio(MOTOR_M3, motorPowerSet.m3);
     motorsSetRatio(MOTOR_M4, motorPowerSet.m4);
+    cm->m1 = motorPowerSet.m1;
+    cm->m2 = motorPowerSet.m2;
+    cm->m3 = motorPowerSet.m3;
+    cm->m4 = motorPowerSet.m4;
   }
   else
   {
@@ -142,7 +162,18 @@ void powerDistribution(const control_t *control)
     motorsSetRatio(MOTOR_M2, motorPower.m2);
     motorsSetRatio(MOTOR_M3, motorPower.m3);
     motorsSetRatio(MOTOR_M4, motorPower.m4);
+    cm->m1 = motorPower.m1;
+    cm->m2 = motorPower.m2;
+    cm->m3 = motorPower.m3;
+    cm->m4 = motorPower.m4;
   }
+
+  //send packet
+  if (update)
+  {
+    //crtpSendPacket(&pkt);
+  }
+
 }
 
 PARAM_GROUP_START(motorPowerSet)

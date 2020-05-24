@@ -51,10 +51,17 @@
 #include "quatcompress.h"
 #include "statsCnt.h"
 #include "static_mem.h"
+#include "crtp_motor.h"
 
 static bool isInit;
 static bool emergencyStop = false;
 static int emergencyStopTimeout = EMERGENCY_STOP_TIMEOUT_DISABLED;
+static bool systemReady = false;
+
+static bool overrideMotors = false;
+static uint32_t lastOverrideTimestamp = 0;
+// unit: ms
+static uint32_t overrideStopTimeout = 200;
 
 #define PROPTEST_NBR_OF_VARIANCE_VALUES   100
 static bool startPropTest = false;
@@ -78,6 +85,13 @@ typedef enum { configureAcc, measureNoiseFloor, measureProp, testBattery, restar
 #endif
 
 static STATS_CNT_RATE_DEFINE(stabilizerRate, 500);
+
+static struct {
+  uint16_t m1;
+  uint16_t m2;
+  uint16_t m3;
+  uint16_t m4;
+} motorThrust;
 
 static struct {
   // position - mm
@@ -130,6 +144,7 @@ STATIC_MEM_TASK_ALLOC(stabilizerTask, STABILIZER_TASK_STACKSIZE);
 
 static void stabilizerTask(void* param);
 static void testProps(sensorData_t *sensors);
+void crtpMotorHandler(CRTPPacket *p);
 
 static void calcSensorToOutputLatency(const sensorData_t *sensorData)
 {
@@ -192,9 +207,47 @@ void stabilizerInit(StateEstimatorType estimator)
   estimatorType = getStateEstimator();
   controllerType = getControllerType();
 
+  crtpRegisterPortCB(CRTP_PORT_MOTOR,crtpMotorHandler);
+
   STATIC_MEM_TASK_CREATE(stabilizerTask, stabilizerTask, STABILIZER_TASK_NAME, NULL, STABILIZER_TASK_PRI);
 
   isInit = true;
+}
+
+void crtpMotorHandler(CRTPPacket *p)
+{
+  if (!systemReady){
+    return;
+  }
+  //consolePuts("crtpMotorHandler called\n");
+  // channel 1 : command
+  if (p->channel == 1){
+    lastOverrideTimestamp = T2M(xTaskGetTickCount());
+    const CrtpMotor* values = (CrtpMotor*)p->data;
+    //consolePrintf("motor 1 = %u\n",values->m1);
+    motorThrust.m1 = values->m1;
+    motorThrust.m2 = values->m2;
+    motorThrust.m3 = values->m3;
+    motorThrust.m4 = values->m4;
+    directMotor(values);
+
+  } else if (p->channel == 4){
+    // set override status
+    const CrtpMotor* values = (CrtpMotor*)p->data;
+    overrideMotors = values->overrideMotors;
+  }
+}
+
+// modify control to suit actual used value
+static void updateControl()
+{
+    if (overrideMotors && !checkOverrideTimeout()){
+      // reverse calculate control for use with state estimator
+      control.thrust = motorThrust.m1/4 + motorThrust.m2/4 + motorThrust.m3/4 + motorThrust.m4/4;
+      control.roll = motorThrust.m3/2 + motorThrust.m4/2 - motorThrust.m1/2 - motorThrust.m2/2;
+      control.pitch = motorThrust.m1/2 + motorThrust.m4/2 - motorThrust.m2/2 - motorThrust.m3/2;
+      control.yaw = motorThrust.m1/4 + motorThrust.m3/4 - motorThrust.m2/4 - motorThrust.m4/4;
+    }
 }
 
 bool stabilizerTest(void)
@@ -220,6 +273,24 @@ static void checkEmergencyStopTimeout()
   }
 }
 
+bool checkOverrideTimeout()
+{ 
+  if (T2M(xTaskGetTickCount()) > lastOverrideTimestamp + overrideStopTimeout){
+    return true;
+  } else{
+    return false;
+  }
+}
+
+bool checkOverrideStatus()
+{
+  if (overrideMotors){
+    return true;
+  } else {
+    return false;
+  }
+}
+
 /* The stabilizer loop runs at 1kHz (stock) or 500Hz (kalman). It is the
  * responsibility of the different functions to run slower by skipping call
  * (ie. returning without modifying the output structure).
@@ -233,6 +304,7 @@ static void stabilizerTask(void* param)
 
   //Wait for the system to be fully started to start stabilization loop
   systemWaitStart();
+  systemReady = true;
 
   DEBUG_PRINT("Wait for sensor calibration...\n");
 
@@ -270,6 +342,9 @@ static void stabilizerTask(void* param)
         controllerInit(controllerType);
         controllerType = getControllerType();
       }
+
+      // update control if motors are overridden
+      updateControl();
 
       stateEstimator(&state, &sensorData, &control, tick);
       compressState();

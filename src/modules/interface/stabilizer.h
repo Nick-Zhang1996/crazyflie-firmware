@@ -64,5 +64,10 @@ void stabilizerResetEmergencyStop();
  */
 void stabilizerSetEmergencyStopTimeout(int timeout);
 
+// check if a healthy override update is available, return true if timeout
+bool checkOverrideTimeout();
+// check if motors should be override with external offboard controller, return true if override active
+bool checkOverrideStatus();
+
 
 #endif /* STABILIZER_H_ */
