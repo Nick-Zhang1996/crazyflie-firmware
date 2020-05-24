@@ -209,7 +209,7 @@ static bool processPreviousFrame(pulseProcessorV1_t *stateV1, pulseProcessorResu
           *baseStation = stateV1->currentBaseStation;
           *axis = stateV1->currentAxis;
 
-          pulseProcessorBaseStationMeasuremnt_t* bsMeasurement = &result->sensorMeasurements[sensor].baseStatonMeasurements[stateV1->currentBaseStation];
+          pulseProcessorBaseStationMeasuremnt_t* bsMeasurement = &result->sensorMeasurementsLh1[sensor].baseStatonMeasurements[stateV1->currentBaseStation];
           bsMeasurement->angles[stateV1->currentAxis] = angle;
           bsMeasurement->validCount++;
 
@@ -285,14 +285,14 @@ static void printBSInfo(struct ootxDataFrame_s *frame)
 
 static void decodeAndApplyBaseStationCalibrationData(pulseProcessor_t *state) {
   if (!state->bsCalibration[0].valid &&
-      ootxDecoderProcessBit(&state->ootxDecoder0, getOotxDataBit(state->v1.currentSync0Width))) {
-    printBSInfo(&state->ootxDecoder0.frame);
-    lighthouseCalibrationInitFromFrame(&state->bsCalibration[0], &state->ootxDecoder0.frame);
+      ootxDecoderProcessBit(&state->ootxDecoder[0], getOotxDataBit(state->v1.currentSync0Width))) {
+    printBSInfo(&state->ootxDecoder[0].frame);
+    lighthouseCalibrationInitFromFrame(&state->bsCalibration[0], &state->ootxDecoder[0].frame);
   }
   if (!state->bsCalibration[1].valid &&
-      ootxDecoderProcessBit(&state->ootxDecoder1, getOotxDataBit(state->v1.currentSync1Width))) {
-    printBSInfo(&state->ootxDecoder1.frame);
-    lighthouseCalibrationInitFromFrame(&state->bsCalibration[1], &state->ootxDecoder1.frame);
+      ootxDecoderProcessBit(&state->ootxDecoder[1], getOotxDataBit(state->v1.currentSync1Width))) {
+    printBSInfo(&state->ootxDecoder[1].frame);
+    lighthouseCalibrationInitFromFrame(&state->bsCalibration[1], &state->ootxDecoder[1].frame);
   }
 }
 
@@ -345,6 +345,7 @@ bool pulseProcessorV1ProcessPulse(pulseProcessor_t *state, const pulseProcessorF
     synchronize(&state->v1, frameData->sensor, frameData->timestamp, frameData->width);
   } else {
     anglesMeasured = processWhenSynchronized(state, frameData->sensor, frameData->timestamp, frameData->width, angles, baseStation, axis);
+    angles->measurementType = lighthouseBsTypeV1;
   }
 
   return anglesMeasured;

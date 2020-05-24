@@ -32,7 +32,7 @@
 #include <stdint.h>
 
 
-#define OOTX_MAX_FRAME_LENGTH 40
+#define OOTX_MAX_FRAME_LENGTH 43
 
 // Content from https://github.com/nairol/LighthouseRedox/blob/master/docs/Base%20Station.md#base-station-info-block
 struct ootxDataFrame_s {
@@ -56,6 +56,12 @@ struct ootxDataFrame_s {
   __fp16 gibmag1;
   uint8_t mode;
   uint8_t faults;
+
+  // Only used in LH 2 that uses a longer data block
+  __fp16 ogeephase0;
+  __fp16 ogeephase1;
+  __fp16 ogeemag0;
+  __fp16 ogeemag1;
 } __attribute__((packed));
 
 typedef struct ootxDecoderState_s {

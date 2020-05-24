@@ -29,22 +29,42 @@
 #include "pulse_processor.h"
 
 
-void pulseProcessorApplyCalibration(pulseProcessor_t *state, pulseProcessorResult_t* angles, int baseStation)
-{
+/**
+ * @brief Apply calibration data to the raw angles and write it to the correctedAngles member.
+ * If no calibration data is available, the raw angles are simply copied to correctedAngles.
+ *
+ * Note: Calibration is only applied for V1 base stations.
+ *
+ * @param state State that contains the calibration data
+ * @param angles The raw and calibrated angles
+ * @param baseStation The base station in question
+ */
+void pulseProcessorApplyCalibration(pulseProcessor_t *state, pulseProcessorResult_t* angles, int baseStation){
+  const lighthouseCalibration_t* calibrationData = &state->bsCalibration[baseStation];
+  // TODO krri Only apply calibration to V1 systems. We have calibration data for V2 systems as well,
+  // we just have to figure out how to use it.
+  const bool doApplyCalibration = calibrationData->valid && (lighthouseBsTypeV1 == angles->measurementType);
+
   for (int sensor = 0; sensor < PULSE_PROCESSOR_N_SENSORS; sensor++) {
-    pulseProcessorBaseStationMeasuremnt_t* bsMeasurement = &angles->sensorMeasurements[sensor].baseStatonMeasurements[baseStation];
-    lighthouseCalibrationApply(&state->bsCalibration[baseStation], bsMeasurement->angles, bsMeasurement->correctedAngles);
+    pulseProcessorBaseStationMeasuremnt_t* bsMeasurement = &angles->sensorMeasurementsLh1[sensor].baseStatonMeasurements[baseStation];
+    if (doApplyCalibration) {
+      lighthouseCalibrationApply(calibrationData, bsMeasurement->angles, bsMeasurement->correctedAngles);
+    } else {
+      lighthouseCalibrationApplyNothing(bsMeasurement->angles, bsMeasurement->correctedAngles);
+    }
   }
 }
 
 /**
- * @brief Clear result struct
+ * @brief Clear the result struct for one base station
  *
- * @param angles
+ * @param angles The result struct to clear
+ * @param baseStation The base station
  */
 void pulseProcessorClear(pulseProcessorResult_t* angles, int baseStation)
 {
   for (size_t sensor = 0; sensor < PULSE_PROCESSOR_N_SENSORS; sensor++) {
-    angles->sensorMeasurements[sensor].baseStatonMeasurements[baseStation].validCount = 0;
+    angles->sensorMeasurementsLh1[sensor].baseStatonMeasurements[baseStation].validCount = 0;
+    angles->sensorMeasurementsLh2[sensor].baseStatonMeasurements[baseStation].validCount = 0;
   }
 }

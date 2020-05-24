@@ -85,6 +85,9 @@ CFLAGS += -DSTM32F4XX -DSTM32F40_41xxx -DHSE_VALUE=8000000 -DUSE_STDPERIPH_DRIVE
 
 LOAD_ADDRESS_stm32f4 = 0x8000000
 LOAD_ADDRESS_CLOAD_stm32f4 = 0x8004000
+MEM_SIZE_FLASH_K = 1008
+MEM_SIZE_RAM_K = 128
+MEM_SIZE_CCM_K = 64
 endif
 
 ################ Build configuration ##################
@@ -167,7 +170,7 @@ PROJ_OBJ += range.o app_handler.o static_mem.o
 
 # Stabilizer modules
 PROJ_OBJ += commander.o crtp_commander.o crtp_commander_rpyt.o
-PROJ_OBJ += crtp_commander_generic.o crtp_localization_service.o
+PROJ_OBJ += crtp_commander_generic.o crtp_localization_service.o peer_localization.o
 PROJ_OBJ += attitude_pid_controller.o sensfusion6.o stabilizer.o
 PROJ_OBJ += position_estimator_altitude.o position_controller_pid.o position_controller_indi.o
 PROJ_OBJ += estimator.o estimator_complementary.o
@@ -393,7 +396,7 @@ ifeq ($(FATFS_DISKIO_TESTS), 1)
 endif
 
 size:
-	@$(SIZE) -B $(PROG).elf
+	@$(PYTHON) $(CRAZYFLIE_BASE)/tools/make/size.py $(SIZE) $(PROG).elf $(MEM_SIZE_FLASH_K) $(MEM_SIZE_RAM_K) $(MEM_SIZE_CCM_K)
 
 #Radio bootloader
 cload:
