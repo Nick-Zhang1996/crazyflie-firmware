@@ -42,6 +42,7 @@
 
 #include "estimator.h"
 #include "quatcompress.h"
+#include "console.h"
 
 #define NBR_OF_RANGES_IN_PACKET   5
 #define DEFAULT_EMERGENCY_STOP_TIMEOUT (1 * RATE_MAIN_LOOP)
@@ -140,6 +141,7 @@ static void extPositionHandler(CRTPPacket* pk)
   ext_pos.stdDev = extPosStdDev;
   estimatorEnqueuePosition(&ext_pos);
   tickOfLastPacket = xTaskGetTickCount();
+  //consolePrintf("Update: %.2f, %.2f, %.2f \n", (double)data->x,(double)data->y,(double)data->z);
 }
 
 static void genericLocHandle(CRTPPacket* pk)
